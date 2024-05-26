@@ -36,3 +36,27 @@
     transform: rotate(360deg);
   }
 }
+
+:root {
+  --login-height: calc(100vh - 200px); /* Fallback value */
+}
+
+html, body, #root, #content {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+/* App.css */
+body {
+  font-family: 'Itim', cursive;
+}
+
+* {
+  font-family: 'Itim', cursive;
+}
