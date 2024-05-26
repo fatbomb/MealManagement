@@ -8,17 +8,19 @@ const Header = () => {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [displayName, setDisplayName] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false); // State to track if user is admin
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setUser(user);
       if (user) {
-        // Fetch user's name from Firestore
+        // Fetch user's name and admin status from Firestore
         const userDocRef = doc(firestore, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setDisplayName(userData.name || user.email);
+          setIsAdmin(userData.admin || false); // Check if user is admin
         } else {
           setDisplayName(user.email);
         }
@@ -51,6 +53,9 @@ const Header = () => {
             <NavLink to="/name" className={`hover:underline ${location.pathname === '/name' ? 'font-bold' : ''}`}>{displayName}</NavLink>
             <NavLink to="/meals" className={`hover:underline ${location.pathname === '/meals' ? 'font-bold' : ''}`}>Meals</NavLink>
             <NavLink to="/months" className={`hover:underline ${location.pathname === '/months' ? 'font-bold' : ''}`}>Months</NavLink>
+            {isAdmin && (
+              <NavLink to="/admin" className={`hover:underline ${location.pathname === '/admin' ? 'font-bold' : ''}`}>Admin</NavLink>
+            )}
             <button onClick={handleLogout} className="hover:underline">Logout</button>
           </>
         ) : (

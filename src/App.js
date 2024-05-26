@@ -8,6 +8,7 @@ import Footer from './Footer';
 import Name from './Pages/Name';
 import Meals from './Pages/Meal';
 import Months from './Pages/Months';
+import Admin from './Pages/Admin';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="/slider" element={<SliderPage />} />
             <Route path="/name" element={<Name />} />
             <Route path="/meals" element={<Meals />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/months" element={<Months />} />
             {/* Add other routes here */}
           </Routes>

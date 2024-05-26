@@ -13,6 +13,9 @@ const Name = () => {
   const [isAvailable, setIsAvailable] = useState(true);
   const [isUserDataExists, setIsUserDataExists] = useState(false);
   const [showMealUpdate, setShowMealUpdate] = useState(false); // State to control the visibility of the meal update form
+  const [isKhalaInCharge, setIsKhalaInCharge] = useState(false);
+  const [isFoodSavingInCharge, setIsFoodSavingInCharge] = useState(false);
+  const [isMessManager, setIsMessManager] = useState(false);
 
   useEffect(() => {
     if (!currentUser) {
@@ -29,7 +32,20 @@ const Name = () => {
         setName(userData.name);
         setPhoneNumber(userData.phoneNumber);
         setIsAvailable(userData.isAvailable);
+        checkRoles(userData);
       }
+    };
+
+    const checkRoles = (userData) => {
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const currentDayName = daysOfWeek[new Date().getDay()];
+      const currentDayIndex = daysOfWeek.indexOf(currentDayName); // Sunday - Saturday : 0 - 6
+      const currentMonth = new Date().getMonth() + 1; // January - December : 1 - 12
+      console.log(currentDayName, userData.foodSavingincharge);
+
+      setIsKhalaInCharge(userData.khalaIncharge === currentDayName);
+      setIsFoodSavingInCharge(userData.foodSavingIncharge === currentDayName);
+      setIsMessManager(userData.messManager === currentMonth);
     };
 
     fetchData();
@@ -62,9 +78,6 @@ const Name = () => {
       name,
       email: currentUser.email,
       phoneNumber,
-      isKhalaInCharge: true,
-      isFoodSavingInCharge: true,
-      isMessManager: true,
       isAvailable
     };
 
@@ -76,11 +89,10 @@ const Name = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-green-400 to-blue-500 gtid grid items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-r from-green-400 to-blue-500 grid items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mt-5">
         <h1 className="text-3xl font-bold mb-6 text-center">Profile Information</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Your form inputs */}
           <div>
             <label className="block text-left font-medium mb-2">Name</label>
             <input
@@ -114,7 +126,7 @@ const Name = () => {
             <div className="flex items-center">
               <input
                 type="checkbox"
-                checked={true}
+                checked={isKhalaInCharge}
                 readOnly
                 className="mr-2"
               />
@@ -123,7 +135,7 @@ const Name = () => {
             <div className="flex items-center">
               <input
                 type="checkbox"
-                checked={true}
+                checked={isFoodSavingInCharge}
                 readOnly
                 className="mr-2"
               />
@@ -132,7 +144,7 @@ const Name = () => {
             <div className="flex items-center">
               <input
                 type="checkbox"
-                checked={true}
+                checked={isMessManager}
                 readOnly
                 className="mr-2"
               />
@@ -156,19 +168,16 @@ const Name = () => {
           </button>
         </form>
 
-        {/* Button to toggle meal update form visibility */}
-        
-      </div>
-      <div className='bg-white p-4 rounded-lg shadow-lg max-w-md w-full mt-5 mb-5'>
-      <button
-          className="w-full p-3 bg-blue-500 text-white font-bold rounded mt-4 hover:bg-blue-600 transition duration-200"
-          onClick={() => setShowMealUpdate(!showMealUpdate)}
-        >
-          Update Meal
-        </button>
+        <div className='bg-white p-4 rounded-lg shadow-lg max-w-md w-full mt-5 mb-5'>
+          <button
+            className="w-full p-3 bg-blue-500 text-white font-bold rounded mt-4 hover:bg-blue-600 transition duration-200"
+            onClick={() => setShowMealUpdate(!showMealUpdate)}
+          >
+            Update Meal
+          </button>
 
-        {/* Meal update form */}
-        {showMealUpdate && <MealUpdateForm userId={currentUser.uid}/>}
+          {showMealUpdate && <MealUpdateForm userId={currentUser.uid} />}
+        </div>
       </div>
     </div>
   );
