@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { firestore } from '../firebaseConfig';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';  // Import the CSS
 
-const MealUpdateForm = ({ userId }) => {
+
+const MealUpdateForm = ({ userId, givenDate, isMessmanager}) => {
+    console.log(userId,givenDate);
     const [date, setDate] = useState('');
     const [day, setDay] = useState('');
     const [lunchAvailable, setLunchAvailable] = useState(false);
@@ -11,21 +15,25 @@ const MealUpdateForm = ({ userId }) => {
     const [extraRiceDinner, setExtraRiceDinner] = useState(0);
     const [editable, setEditable] = useState(true);
     const [dinnerEditable, setDinnerEditable] = useState(true);
-
+    
     useEffect(() => {
-        // Calculate day from the selected date
+        console.log(givenDate);
         if (date) {
             const selectedDate = new Date(date);
             const options = { weekday: 'long' };
             const day = new Intl.DateTimeFormat('en-US', options).format(selectedDate);
             setDay(day);
         }
+        else if(givenDate){
+            const formattedDate = givenDate.toISOString().split('T')[0];
+            setDate(formattedDate);
+        }
+        
     }, [date]);
 
-    useEffect((userId) => {
-        // Fetch data for the selected date from Firestore
+    useEffect(() => {
         const fetchMealData = async () => {
-            if (!date) return; // Don't fetch if date is not set
+            if (!date) return;
             const mealDocRef = doc(firestore, `users/${userId}/meals`, date);
             const mealDocSnapshot = await getDoc(mealDocRef);
             if (mealDocSnapshot.exists()) {
@@ -35,7 +43,6 @@ const MealUpdateForm = ({ userId }) => {
                 setExtraRiceLunch(mealData.extraRiceLunch || 0);
                 setExtraRiceDinner(mealData.extraRiceDinner || 0);
             } else {
-                // If no data exists for the selected date, reset form fields
                 setLunchAvailable(false);
                 setDinnerAvailable(false);
                 setExtraRiceLunch(0);
@@ -47,7 +54,6 @@ const MealUpdateForm = ({ userId }) => {
     }, [date]);
 
     useEffect(() => {
-        // Check conditions for editability
         const currentDate = new Date();
         const currentHour = currentDate.getHours();
         const selectedDate = new Date(date);
@@ -70,7 +76,6 @@ const MealUpdateForm = ({ userId }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Prepare data to be saved in Firestore
         const mealData = {
             date,
             lunchAvailable,
@@ -82,14 +87,14 @@ const MealUpdateForm = ({ userId }) => {
         try {
             const mealDocRef = doc(firestore, `users/${userId}/meals`, date);
             await setDoc(mealDocRef, mealData);
-            alert('Meal data saved successfully!');
+            toast.success('Meal data saved successfully!');
         } catch (error) {
-            alert('Error saving meal data: ' + error.message);
+            toast.error('Error saving meal data: ' + error.message);
         }
     };
 
     return (
-        <div className="bg-white p-8 rounded-lg shadow-lg mt-4">
+        <div className="bg-white p-8 mt-4">
             <h2 className="text-2xl font-bold mb-4">Update Meal</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
@@ -97,7 +102,7 @@ const MealUpdateForm = ({ userId }) => {
                         <label className="block text-left font-medium mb-2">Date</label>
                         <input
                             type="date"
-                            value={date}
+                            value={date? date:givenDate}
                             onChange={(e) => setDate(e.target.value)}
                             className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
@@ -121,7 +126,7 @@ const MealUpdateForm = ({ userId }) => {
                         checked={lunchAvailable}
                         onChange={(e) => setLunchAvailable(e.target.checked)}
                         className="mr-2"
-                        disabled={!editable}
+                        disabled={!editable && !isMessmanager}
                     />
                     <label>Lunch </label>
                 </div>
@@ -131,7 +136,7 @@ const MealUpdateForm = ({ userId }) => {
                         checked={dinnerAvailable}
                         onChange={(e) => setDinnerAvailable(e.target.checked)}
                         className="mr-2"
-                        disabled={!editable && !dinnerEditable}
+                        disabled={!editable && !dinnerEditable && !isMessmanager}
                     />
                     <label>Dinner</label>
                 </div>
@@ -143,7 +148,7 @@ const MealUpdateForm = ({ userId }) => {
                         onChange={(e) => setExtraRiceLunch(parseInt(e.target.value))}
                         className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         min={0}
-                        disabled={!editable}
+                        disabled={!editable && !isMessmanager}
                     />
                 </div>
                 <div>
@@ -154,13 +159,13 @@ const MealUpdateForm = ({ userId }) => {
                         onChange={(e) => setExtraRiceDinner(parseInt(e.target.value))}
                         className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         min={0}
-                        disabled={!editable && !dinnerEditable}
+                        disabled={!editable && !dinnerEditable && !isMessmanager}
                     />
                 </div>
                 <button
                     type="submit"
                     className="w-full p-3 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition duration-200"
-                    disabled={!editable && !dinnerEditable}
+                    disabled={!editable && !dinnerEditable && !isMessmanager}
                 >
                     Submit
                 </button>

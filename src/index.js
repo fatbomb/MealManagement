@@ -5,11 +5,14 @@ import './index.css'; // Import Tailwind CSS
 import App from './App';
 import { AuthProvider } from './AuthContext';
 import reportWebVitals from './reportWebVitals';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 ReactDOM.render(
    <React.StrictMode>
     <AuthProvider>
       <App />
+      <ToastContainer/>
     </AuthProvider>
   </React.StrictMode>,
   document.getElementById('root')

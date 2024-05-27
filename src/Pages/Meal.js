@@ -199,7 +199,7 @@ const Meals = () => {
     
 
     return (
-        <div className="p-4">
+        <div className="min-h-screen bg-gradient-to-b from-red-200 to-blue-200 p-8">
             <div>
                 <ul className="flex border-b mb-4">
                     <li className={`mr-2 ${tab === 'single' ? 'border-b-2 border-blue-500' : ''}`}>

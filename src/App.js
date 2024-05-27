@@ -9,6 +9,7 @@ import Name from './Pages/Name';
 import Meals from './Pages/Meal';
 import Months from './Pages/Months';
 import Admin from './Pages/Admin';
+import MealsPage from './Pages/MonthSummary';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
             <Route path="/meals" element={<Meals />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/months" element={<Months />} />
+            <Route path="/monthmeal" element={<MealsPage/>} />
             {/* Add other routes here */}
           </Routes>
         </main>

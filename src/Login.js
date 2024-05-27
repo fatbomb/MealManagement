@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import Lottie from 'react-lottie-player';
 import loginAnimation from './lotties/login-animation.json';  // Replace with your actual Lottie animation file path
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password);
       navigate('/name');
     } catch (error) {
-      alert(error.message);
+      toast(error.message);
     }
   };
 
@@ -27,9 +28,9 @@ const Login = () => {
     }
     try {
       await sendPasswordResetEmail(auth, email);
-      alert('Password reset email sent!');
+      toast('Password reset email sent!');
     } catch (error) {
-      alert(error.message);
+      toast(error.message);
     }
   };
 

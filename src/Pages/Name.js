@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { firestore } from '../firebaseConfig';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import MealUpdateForm from '../Components/MealUpdateForm'; // Import the meal update form component
+import { toast } from 'react-toastify';
 
 const Name = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const Name = () => {
   const [isKhalaInCharge, setIsKhalaInCharge] = useState(false);
   const [isFoodSavingInCharge, setIsFoodSavingInCharge] = useState(false);
   const [isMessManager, setIsMessManager] = useState(false);
+  const date= new Date();
 
   useEffect(() => {
     if (!currentUser) {
@@ -45,7 +47,7 @@ const Name = () => {
 
       setIsKhalaInCharge(userData.khalaIncharge === currentDayName);
       setIsFoodSavingInCharge(userData.foodSavingIncharge === currentDayName);
-      setIsMessManager(userData.messManager === currentMonth);
+      setIsMessManager(userData.isMessManager);
     };
 
     fetchData();
@@ -55,9 +57,9 @@ const Name = () => {
     const userDocRef = doc(firestore, 'users', currentUser.uid);
     try {
       await updateDoc(userDocRef, userData);
-      alert('User data updated successfully!');
+      toast('User data updated successfully!');
     } catch (error) {
-      alert('Error updating user data: ' + error.message);
+      toast('Error updating user data: ' + error.message);
     }
   };
 
@@ -65,9 +67,9 @@ const Name = () => {
     const userDocRef = doc(firestore, 'users', currentUser.uid);
     try {
       await setDoc(userDocRef, userData);
-      alert('User data saved successfully!');
+      toast('User data saved successfully!');
     } catch (error) {
-      alert('Error saving user data: ' + error.message);
+      toast('Error saving user data: ' + error.message);
     }
   };
 
@@ -93,23 +95,24 @@ const Name = () => {
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mt-5">
         <h1 className="text-3xl font-bold mb-6 text-center">Profile Information</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className='grid grid-cols-2 gap-3 mr-6'>
+          <div >
             <label className="block text-left font-medium mb-2">Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
           </div>
           <div>
-            <label className="block text-left font-medium mb-2">Email Address</label>
+            <label className="block text-left font-medium mb-2 mx-2">Email Address</label>
             <input
               type="email"
               value={currentUser ? currentUser.email : ''}
               readOnly
-              className="w-full p-3 border border-gray-300 rounded bg-gray-100 focus:outline-none"
+              className=" p-2 border mx-2 border-gray-300 rounded bg-gray-100 focus:outline-none"
             />
           </div>
           <div>
@@ -118,12 +121,11 @@ const Name = () => {
               type="tel"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center">
+            <div className="mx-2 flex items-center">
               <input
                 type="checkbox"
                 checked={isKhalaInCharge}
@@ -141,7 +143,7 @@ const Name = () => {
               />
               <label>Is Food Saving in Charge</label>
             </div>
-            <div className="flex items-center">
+            <div className=" mx-2 flex items-center">
               <input
                 type="checkbox"
                 checked={isMessManager}
@@ -168,7 +170,7 @@ const Name = () => {
           </button>
         </form>
 
-        <div className='bg-white p-4 rounded-lg shadow-lg max-w-md w-full mt-5 mb-5'>
+        <div className='bg-white rounded-lg max-w-full w-full mt-5 mb-5'>
           <button
             className="w-full p-3 bg-blue-500 text-white font-bold rounded mt-4 hover:bg-blue-600 transition duration-200"
             onClick={() => setShowMealUpdate(!showMealUpdate)}
@@ -176,7 +178,7 @@ const Name = () => {
             Update Meal
           </button>
 
-          {showMealUpdate && <MealUpdateForm userId={currentUser.uid} />}
+          {showMealUpdate && <MealUpdateForm userId={currentUser.uid} givenDate={date} isMessmanager={currentUser.isMessManager} />}
         </div>
       </div>
     </div>

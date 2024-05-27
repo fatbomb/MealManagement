@@ -51,6 +51,7 @@ const Header = () => {
         {user ? (
           <>
             <NavLink to="/name" className={`hover:underline ${location.pathname === '/name' ? 'font-bold' : ''}`}>{displayName}</NavLink>
+            <NavLink to="/monthmeal" className={`hover:underline ${location.pathname === '/monthmeal' ? 'font-bold' : ''}`}>Month Summary</NavLink>
             <NavLink to="/meals" className={`hover:underline ${location.pathname === '/meals' ? 'font-bold' : ''}`}>Meals</NavLink>
             <NavLink to="/months" className={`hover:underline ${location.pathname === '/months' ? 'font-bold' : ''}`}>Months</NavLink>
             {isAdmin && (
