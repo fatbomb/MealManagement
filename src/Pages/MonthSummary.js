@@ -159,10 +159,14 @@ const MealsPage = () => {
                             ))}
                         </tr>
                     </thead>
-                    <tbody>
-                        {renderTableRows()}
-                    </tbody>
                 </table>
+                <div className="overflow-y-auto max-h-96"> {/* Adjust max-h-96 to your desired maximum height */}
+                    <table className="table-auto border-collapse w-full bg-white shadow-lg">
+                        <tbody>
+                            {renderTableRows()}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             {selectedCell.userId && currentUser && currentUser.isMessManager && selectedCell.date && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">

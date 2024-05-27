@@ -35,7 +35,7 @@ const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+    <div container className="relative min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
       {/* Animation in top left corner */}
       <Lottie
         loop
