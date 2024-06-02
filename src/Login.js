@@ -64,7 +64,7 @@ const Login = () => {
         play
         style={{ width: 100, height: 100, position: 'absolute', bottom: 0, right: 0 }}
       />
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center relative z-10">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center relative">
         <h1 className="text-3xl font-bold mb-6">Login</h1>
         <input
           type="email"

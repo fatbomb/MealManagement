@@ -60,3 +60,45 @@ body {
 * {
   font-family: 'Itim', cursive;
 }
+/* Add this to your CSS file */
+.hover\:underline-animation::after {
+  content: '';
+  display: block;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 1) 0%, rgba(168, 85, 247, 1) 100%);
+  transition: width 0.3s;
+}
+
+.hover\:underline-animation:hover::after {
+  width: 100%;
+}
+
+.underline-animation::after {
+  content: '';
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 1) 0%, rgba(168, 85, 247, 1) 100%);
+}
+.table-container {
+  max-height: 400px; /* Adjust as needed */
+  position: relative; /* Ensure proper positioning */
+}
+
+.table-container table {
+  width: 100%;
+}
+
+.table-container thead th {
+  position: sticky;
+  top: 0;
+  z-index: -1;
+}
+
+.table-container tbody {
+  overflow-y: auto;
+  max-height: calc(100% - 2.5em); /* Adjust to accommodate the header height */
+  padding-top: 2.5em; /* Height of the fixed header */
+}
+
