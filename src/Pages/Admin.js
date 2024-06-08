@@ -116,7 +116,7 @@ const Admin = () => {
   
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-300 to-purple-500 p-8">
+    <div className="min-h-screen bg-gradient-to-b from-blue-300 to-purple-500 p-8 mt-16">
       <h1 className="text-3xl font-bold mb-6 text-center">Admin Panel</h1>
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto">
         <div className="flex justify-center mb-4">

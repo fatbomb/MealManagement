@@ -1,4 +1,3 @@
-// src/components/Months.js
 import React, { useEffect, useState } from 'react';
 import { auth, firestore } from '../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -25,6 +24,7 @@ const Months = () => {
     week3Shopping: 0,
     week4Shopping: 0
   });
+  const [allUsersMealData, setAllUsersMealData] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -36,7 +36,7 @@ const Months = () => {
         setIsMessManager(false);
       }
     });
-    
+
     // Set current month as default selected month
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
@@ -87,10 +87,64 @@ const Months = () => {
     setUsers(usersList);
   };
 
+  // const fetchAllUsersMealData = async (month) => {
+  //   const usersCollection = collection(firestore, 'users');
+  //   const usersSnapshot = await getDocs(usersCollection);
+  //   const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  //   let totalLunches = 0;
+  //   let totalDinners = 0;
+  //   let totalExtraRiceLunch = 0;
+  //   let totalExtraRiceDinner = 0;
+
+  //   for (const user of users) {
+  //     const mealDataCollection = collection(firestore, 'users', user.id, 'meals');
+  //     const mealDataSnapshot = await getDocs(mealDataCollection);
+  //     const mealData = mealDataSnapshot.docs.map(doc => doc.data());
+  //     const filteredMealData = mealData.filter(meal => meal.date.startsWith(month));
+
+  //     filteredMealData.forEach(meal => {
+  //       if (meal.lunchAvailable) totalLunches++;
+  //       if (meal.dinnerAvailable) totalDinners++;
+  //       totalExtraRiceLunch += meal.extraRiceLunch || 0;
+  //       totalExtraRiceDinner += meal.extraRiceDinner || 0;
+  //     });
+  //   }
+
+  //   return { totalLunches, totalDinners, totalExtraRiceLunch, totalExtraRiceDinner };
+  // };
+  const fetchAllUsersMealData = async (month) => {
+    const dailyAggregatesCollection = collection(firestore, 'dailyAggregates');
+    const dailyAggregatesSnapshot = await getDocs(dailyAggregatesCollection);
+  
+    let totalLunches = 0;
+    let totalDinners = 0;
+    let totalExtraRiceLunch = 0;
+    let totalExtraRiceDinner = 0;
+  
+    dailyAggregatesSnapshot.docs.forEach(doc => {
+      const date = doc.id;
+      const monthYear = date.substring(0, 7); // Extract year and month from the date string
+  
+      if (monthYear === month) {
+        const data = doc.data();
+        totalLunches += data.totalLunches || 0;
+        totalDinners += data.totalDinners || 0;
+        totalExtraRiceLunch += data.totalExtraRiceLunch || 0;
+        totalExtraRiceDinner += data.totalExtraRiceDinner || 0;
+      }
+    });
+    console.log(totalLunches, totalDinners, totalExtraRiceLunch, totalExtraRiceDinner);
+    return { totalLunches, totalDinners, totalExtraRiceLunch, totalExtraRiceDinner };
+  };
+  
+  
+
   useEffect(() => {
     if (selectedMonth) {
       fetchUsers();
       fetchBills(selectedMonth);
+      fetchAllUsersMealData(selectedMonth).then(data => setAllUsersMealData(data));
     }
   }, [selectedMonth]);
 
@@ -108,7 +162,7 @@ const Months = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-100 to-blue-300 p-4">
+    <div className="min-h-screen bg-gradient-to-b from-green-100 to-blue-300 p-4 mt-16">
       <h1 className="text-3xl font-bold mb-6 text-center">Monthly Bills and Dues</h1>
       <div className="flex items-center justify-center gap-4 mb-8">
         <label className="block text-lg font-medium">Select Month:</label>
@@ -158,6 +212,8 @@ const Months = () => {
             userName={user.name}
             selectedMonth={selectedMonth}
             isMessManager={isMessManager}
+            allUsersMealData={allUsersMealData}
+            users={users}  // Pass the users data here
           />
         ))}
       </div>

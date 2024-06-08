@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { firestore } from '../firebaseConfig';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 
@@ -14,7 +14,7 @@ const Meals = () => {
     const [singleDateData, setSingleDateData] = useState(null);
     const [rangeData, setRangeData] = useState(null);
     const [totalRangeData,setTotalRangeData] = useState(null);
-    
+    const [dailyAggregateData, setDailyAggregateData] = useState(null); // New state for daily aggregate data
 
     useEffect(() => {
         const fetchSingleDateData = async () => {
@@ -113,6 +113,23 @@ const Meals = () => {
         
     }, [startDate, endDate]);
 
+    // Function to fetch daily aggregate data
+    useEffect(() => {
+        const fetchDailyAggregate = async () => {
+            const dateStr = singleDate.toISOString().substring(0, 10);
+            const dailyAggregateRef = doc(firestore, 'dailyAggregates', dateStr);
+            const dailyAggregateDoc = await getDoc(dailyAggregateRef);
+            if (dailyAggregateDoc.exists()) {
+                setDailyAggregateData(dailyAggregateDoc.data());
+            } else {
+                setDailyAggregateData(null);
+            }
+        };
+
+        fetchDailyAggregate();
+    }, [singleDate]);
+
+    // Single date graph data
     const singleDateGraphData = {
         labels: ['Single Date'],
         datasets: [
@@ -154,7 +171,8 @@ const Meals = () => {
             },
         ],
     };
-    
+
+    // Range graph data
     const rangeGraphData = {
         labels: rangeData?.map(data => data.date) || [],
         datasets: [
@@ -196,10 +214,9 @@ const Meals = () => {
             },
         ],
     };
-    
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-red-200 to-blue-200 p-8">
+        <div className="min-h-screen bg-gradient-to-b from-red-200 to-blue-200 mt-16 p-4">
             <div>
                 <ul className="flex border-b mb-4">
                     <li className={`mr-2 ${tab === 'single' ? 'border-b-2 border-blue-500' : ''}`}>
@@ -211,67 +228,65 @@ const Meals = () => {
                 </ul>
                 {tab === 'single' && (
                     <div className="bg-white p-3 rounded-lg shadow-md">
-                    <div className='flex gap-2'>
-                    <h2 className=" font-semibold mb-2">Select a Date</h2>
-                    <DatePicker 
-                        selected={singleDate} 
-                        onChange={date => setSingleDate(date)} 
-                        className="mb-4 w-full px-2 border border-gray-300 rounded"
-                    />
-                    </div>
+                        <div className='flex gap-2'>
+                            <h2 className=" font-semibold mb-2">Select a Date</h2>
+                            <DatePicker 
+                                selected={singleDate} 
+                                onChange={date => setSingleDate(date)} 
+                                className="mb-4 w-full px-2 border border-gray-300 rounded"
+                            />
+                        </div>
                     
-                    <div className=" p-4 bg-gray-100 rounded-lg">
-                        <p className="mb-2 text-gray-700">Total Lunches: <span className="font-bold">{singleDateData?.totalLunches || 0}</span></p>
-                        <p className="mb-2 text-gray-700">Total Rices for Lunch: <span className="font-bold">{singleDateData?.totalExtraRiceLunch || 0}</span></p>
-                        <p className="mb-2 text-gray-700">Total Dinners: <span className="font-bold">{singleDateData?.totalDinners || 0}</span></p>
-                        <p className="mb-2 text-gray-700">Total Rices for Dinner: <span className="font-bold">{singleDateData?.totalExtraRiceDinner || 0}</span></p>
+                        <div className=" p-4 bg-gray-100 rounded-lg">
+                            <p className="mb-2 text-gray-700">Total Lunches: <span className="font-bold">{singleDateData?.totalLunches || 0}</span></p>
+                            <p className="mb-2 text-gray-700">Total Rices for Lunch: <span className="font-bold">{singleDateData?.totalExtraRiceLunch || 0}</span></p>
+                            <p className="mb-2 text-gray-700">Total Dinners: <span className="font-bold">{singleDateData?.totalDinners || 0}</span></p>
+                            <p className="mb-2 text-gray-700">Total Rices for Dinner: <span className="font-bold">{singleDateData?.totalExtraRiceDinner || 0}</span></p>
+                        </div>
+                        <div className="mt-3">
+                            <Bar data={singleDateGraphData} />
+                        </div>
                     </div>
-                    <div className="mt-3">
-                        <Bar data={singleDateGraphData} />
-                    </div>
-                </div>
-                
                 )}
                 {tab === 'range' && (
                     <div>
-                    <div className="flex gap-5 mb-4">
-                        <div className='flex gap-1'> 
-                            <h2 className='font-semibold'>Starting Date </h2>
-                            <DatePicker selected={startDate} onChange={date => setStartDate(date)} className="mb-2  w-full px-2 border border-gray-300 rounded" />
-                        </div>
-                        <div className='flex gap-1'>
-                            <h2 className='font-semibold'>Ending Date </h2>
-                            <DatePicker selected={endDate} onChange={date => setEndDate(date)} className="mb-2 w-full px-2 border border-gray-300 rounded"/>
-                        </div>
-                    </div>
-                    
-                    {/* Display total values */}
-                    <div className="flex flex-col mb-4">
-                        <div className=" p-4 bg-gray-100 rounded-lg">
-                            <p>Total Number of Lunches: <span className="font-bold">{totalRangeData.totalLunches}</span></p>
-                            <p>Total Number of Rices for Lunch: <span className="font-bold">{totalRangeData.totalExtraRiceLunch}</span></p>
-                            <p>Total Number of Dinners: <span className="font-bold">{totalRangeData.totalDinners}</span></p>
-                            <p>Total Number of Rices for Dinner: <span className="font-bold">{totalRangeData.totalExtraRiceDinner}</span></p>
-                        </div>
-                        <div>
-                            <Bar data={rangeGraphData} />
-                        </div>
-                    </div>
-                    
-                    {/* Display individual data */}
-                    <div className="mt-4">
-                        {rangeData?.map((data, index) => (
-                            <div key={index} className="mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-                                <p className="text-lg font-semibold mb-2">Date: <span className="font-normal">{data.date}</span></p>
-                                <p className="mb-1 text-gray-700">Total Number of Lunches: <span className="font-bold">{data.totalLunches}</span></p>
-                                <p className="mb-1 text-gray-700">Total Number of Extra Rices for Lunch: <span className="font-bold">{data.totalExtraRiceLunch}</span></p>
-                                <p className="mb-1 text-gray-700">Total Number of Dinners: <span className="font-bold">{data.totalDinners}</span></p>
-                                <p className="mb-1 text-gray-700">Total Number of Extra Rices for Dinner: <span className="font-bold">{data.totalExtraRiceDinner}</span></p>
+                        <div className="flex gap-5 mb-4">
+                            <div className='flex gap-1'> 
+                                <h2 className='font-semibold'>Starting Date </h2>
+                                <DatePicker selected={startDate} onChange={date => setStartDate(date)} className="mb-2  w-full px-2 border border-gray-300 rounded" />
                             </div>
-                        ))}
+                            <div className='flex gap-1'>
+                                <h2 className='font-semibold'>Ending Date </h2>
+                                <DatePicker selected={endDate} onChange={date => setEndDate(date)} className="mb-2 w-full px-2 border border-gray-300 rounded"/>
+                            </div>
+                        </div>
+                    
+                        {/* Display total values */}
+                        <div className="flex flex-col mb-4">
+                            <div className=" p-4 bg-gray-100 rounded-lg">
+                                <p>Total Number of Lunches: <span className="font-bold">{totalRangeData.totalLunches}</span></p>
+                                <p>Total Number of Rices for Lunch: <span className="font-bold">{totalRangeData.totalExtraRiceLunch}</span></p>
+                                <p>Total Number of Dinners: <span className="font-bold">{totalRangeData.totalDinners}</span></p>
+                                <p>Total Number of Rices for Dinner: <span className="font-bold">{totalRangeData.totalExtraRiceDinner}</span></p>
+                            </div>
+                            <div>
+                                <Bar data={rangeGraphData} />
+                            </div>
+                        </div>
+                    
+                        {/* Display individual data */}
+                        <div className="mt-4">
+                            {rangeData?.map((data, index) => (
+                                <div key={index} className="mb-4 p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                    <p className="text-lg font-semibold mb-2">Date: <span className="font-normal">{data.date}</span></p>
+                                    <p className="mb-1 text-gray-700">Total Number of Lunches: <span className="font-bold">{data.totalLunches}</span></p>
+                                    <p className="mb-1 text-gray-700">Total Number of Extra Rices for Lunch: <span className="font-bold">{data.totalExtraRiceLunch}</span></p>
+                                    <p className="mb-1 text-gray-700">Total Number of Dinners: <span className="font-bold">{data.totalDinners}</span></p>
+                                    <p className="mb-1 text-gray-700">Total Number of Extra Rices for Dinner: <span className="font-bold">{data.totalExtraRiceDinner}</span></p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-                
                 )}
             </div>
         </div>
@@ -279,4 +294,3 @@ const Meals = () => {
 };
 
 export default Meals;
-

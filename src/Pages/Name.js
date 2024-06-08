@@ -106,13 +106,13 @@ const Name = () => {
               required
             />
           </div>
-          <div>
+          <div className='w-full max-w-xs mx-auto p-2'>
             <label className="block text-left font-medium mb-2 mx-2">Email Address</label>
             <input
               type="email"
               value={currentUser ? currentUser.email : ''}
               readOnly
-              className=" p-2 border mx-2 border-gray-300 rounded bg-gray-100 focus:outline-none"
+              className="w-full p-2 border border-gray-300 rounded bg-gray-100 focus:outline-none"
             />
           </div>
           <div>

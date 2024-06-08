@@ -35,20 +35,20 @@ const Login = () => {
   };
 
   return (
-    <div container className="relative min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+    <div container className="relative min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center -mt-14">
       {/* Animation in top left corner */}
       <Lottie
         loop
         animationData={loginAnimation}
         play
-        style={{ width: 100, height: 100, position: 'absolute', top: 0, left: 0 }}
+        style={{ width: 100, height: 100, position: 'absolute', top: 140, left: 0 }}
       />
       {/* Animation in top right corner */}
       <Lottie
         loop
         animationData={loginAnimation}
         play
-        style={{ width: 100, height: 100, position: 'absolute', top: 0, right: 0 }}
+        style={{ width: 100, height: 100, position: 'absolute', top: 140, right: 0 }}
       />
       {/* Animation in bottom left corner */}
       <Lottie
@@ -64,7 +64,7 @@ const Login = () => {
         play
         style={{ width: 100, height: 100, position: 'absolute', bottom: 0, right: 0 }}
       />
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center relative">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center relative mt-24">
         <h1 className="text-3xl font-bold mb-6">Login</h1>
         <input
           type="email"

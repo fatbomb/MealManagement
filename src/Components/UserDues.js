@@ -1,20 +1,19 @@
-// src/components/UserDues.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { firestore } from '../firebaseConfig';
 import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 
-const UserDues = ({ userId, userName, selectedMonth, isMessManager }) => {
+const UserDues = ({ userId, userName, selectedMonth, isMessManager, allUsersMealData, users }) => {
   const [amountGiven, setAmountGiven] = useState(0);
   const [amountToPay, setAmountToPay] = useState(0);
   const [amountDue, setAmountDue] = useState(0);
   const [amountToAdd, setAmountToAdd] = useState(0);
 
   useEffect(() => {
-    if (userId && selectedMonth) {
-      calculateDues(userId, selectedMonth);
+    if (userId && selectedMonth && allUsersMealData) {
+      calculateDues(userId, selectedMonth, allUsersMealData);
     }
-  }, [userId, selectedMonth]);
+  }, [userId, selectedMonth, allUsersMealData]);
 
   const fetchBills = async (month) => {
     const billsDoc = await getDoc(doc(firestore, 'bills', month));
@@ -24,50 +23,36 @@ const UserDues = ({ userId, userName, selectedMonth, isMessManager }) => {
     return null;
   };
 
-  const fetchUsers = async () => {
-    const usersCollection = collection(firestore, 'users');
-    const usersSnapshot = await getDocs(usersCollection);
-    return usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  };
-
-  const fetchAllUsersMealData = async (month) => {
-    const users = await fetchUsers();
-    let totalLunches = 0;
-    let totalDinners = 0;
-    let totalExtraRiceLunch = 0;
-    let totalExtraRiceDinner = 0;
-
-    for (const user of users) {
-      const mealDataCollection = collection(firestore, 'users', user.id, 'meals');
-      const mealDataSnapshot = await getDocs(mealDataCollection);
-      const mealData = mealDataSnapshot.docs.map(doc => doc.data());
-      const filteredMealData = mealData.filter(meal => meal.date.startsWith(month));
-
-      filteredMealData.forEach(meal => {
-        if (meal.lunchAvailable) totalLunches++;
-        if (meal.dinnerAvailable) totalDinners++;
-        totalExtraRiceLunch += meal.extraRiceLunch || 0;
-        totalExtraRiceDinner += meal.extraRiceDinner || 0;
-      });
+  // const fetchUserMealData = async (userId, month) => {
+  //   const mealDataCollection = collection(firestore, 'users', userId, 'meals');
+  //   const mealDataSnapshot = await getDocs(mealDataCollection);
+  //   const mealData = mealDataSnapshot.docs.map(doc => doc.data());
+  //   return mealData.filter(meal => meal.date.startsWith(month));
+  // };
+  const fetchMonthlyAggregates = async (userId, month) => {
+    const userMonthlyAggregatesDoc = await getDoc(doc(firestore, 'users', userId, 'monthlyAggregates', month));
+    if (userMonthlyAggregatesDoc.exists()) {
+      return {
+        totalLunchesu: userMonthlyAggregatesDoc.data().totalLunches || 0,
+        totalDinnersu: userMonthlyAggregatesDoc.data().totalDinners || 0,
+        totalExtraRiceLunchu: userMonthlyAggregatesDoc.data().totalExtraRiceLunch || 0,
+        totalExtraRiceDinneru: userMonthlyAggregatesDoc.data().totalExtraRiceDinner || 0
+      };
+      
     }
-
-    return { totalLunches, totalDinners, totalExtraRiceLunch, totalExtraRiceDinner };
+    return null;
   };
 
-  const fetchUserMealData = async (userId, month) => {
-    const mealDataCollection = collection(firestore, 'users', userId, 'meals');
-    const mealDataSnapshot = await getDocs(mealDataCollection);
-    const mealData = mealDataSnapshot.docs.map(doc => doc.data());
-    return mealData.filter(meal => meal.date.startsWith(month));
-  };
-
-  const calculateDues = async (userId, month) => {
+  const calculateDues = async (userId, month, allUsersMealData) => {
     const bills = await fetchBills(month);
-    const users = await fetchUsers();
-    const { totalLunches, totalDinners, totalExtraRiceLunch, totalExtraRiceDinner } = await fetchAllUsersMealData(month);
-    const userMealData = await fetchUserMealData(userId, month);
+    const { totalLunches, totalDinners, totalExtraRiceLunch, totalExtraRiceDinner } = allUsersMealData;
+    // const userMealData = await fetchUserMealData(userId, month);
+    const userMonthlyAggregates = await fetchMonthlyAggregates(userId, month);
+    console.log(userName,userMonthlyAggregates);
+    const { totalLunchesu=0, totalDinnersu=0, totalExtraRiceLunchu=0, totalExtraRiceDinneru=0 } = userMonthlyAggregates||{};
+    const totalExtraRiceu = totalExtraRiceLunchu + totalExtraRiceDinneru;
 
-    if (!bills || users.length === 0 ||(totalLunches+totalDinners)===0) return;
+    if (!bills || (totalLunches + totalDinners) === 0) return;
 
     const generalCost = bills.houseRent + bills.wifiBill + bills.khalaBill + bills.currentBill + bills.dustBill + bills.festBill;
     const generalCostPerPerson = generalCost / users.length;
@@ -79,19 +64,11 @@ const UserDues = ({ userId, userName, selectedMonth, isMessManager }) => {
 
     const singleDinnerCost = foodCost / (totalDinners + (totalLunches * (38 / 62)));
     const singleLunchCost = singleDinnerCost * (38 / 62);
+    console.log(singleDinnerCost,singleLunchCost);
 
-    let userLunches = 0;
-    let userDinners = 0;
-    let userExtraRice = 0;
 
-    userMealData.forEach(meal => {
-      if (meal.lunchAvailable) userLunches++;
-      if (meal.dinnerAvailable) userDinners++;
-      userExtraRice += (meal.extraRiceLunch || 0) + (meal.extraRiceDinner || 0);
-    });
-
-    const userFoodCost = userMealData.length > 0 ? 
-                         (userLunches * singleLunchCost) + (userDinners * singleDinnerCost) + (10 * userExtraRice) : 0;
+    const userFoodCost =  userMonthlyAggregates!=null ? 
+                         (totalLunchesu * singleLunchCost) + (totalDinnersu * singleDinnerCost) + (10 * totalExtraRiceu) : 0;
 
     const totalAmountToPay = generalCostPerPerson + userFoodCost;
 
@@ -146,25 +123,25 @@ const UserDues = ({ userId, userName, selectedMonth, isMessManager }) => {
           <span>{amountDue.toFixed(2)} TK</span>
         </div>
         {isMessManager && (
-          <>
-            <div className="flex justify-between">
-              <label className="block font-medium">Add/Remove Amount:</label>
-              <input
-                type="number"
-                value={amountToAdd}
-                onChange={handleAmountChange}
-                className="p-2 border rounded-lg"
-              />
-            </div>
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={handleSave}
-                className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300"
-              >
-                Save Changes
-              </button>
-            </div>
-          </>
+          <div>
+          <div className="flex flex-col md:flex-row md:justify-between">
+            <label className="block font-medium mb-4 md:mb-0">Add/Remove Amount:</label>
+            <input
+              type="number"
+              value={amountToAdd}
+              onChange={handleAmountChange}
+              className="p-2 border rounded-lg"
+            />
+          </div>
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={handleSave}
+              className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-300"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
         )}
       </div>
     </div>
